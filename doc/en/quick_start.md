@@ -25,22 +25,6 @@ flutter pub get
 
 Create a data structure containing vertices (nodes) and edges (connections):
 
-```dart
-final graphData = {
-  'vertexes': [
-    {'id': '1', 'tag': 'user', 'data': null},
-    {'id': '2', 'tag': 'user', 'data': null},
-    {'id': '3', 'tag': 'admin', 'data': null},
-  ],
-  'edges': [
-    {'ranking': 1, 'edgeName': 'follows', 'srcId': '1', 'dstId': '2'},
-    {'ranking': 2, 'edgeName': 'manages', 'srcId': '3', 'dstId': '1'},
-  ]
-};
-```
-
-The `MapConvertor` (the default data converter) expects this structure. If your data is in a different format, you can write a custom `DataConvertor` to transform it.
-
 ### Vertex Structure
 
 ```dart
@@ -63,6 +47,26 @@ The `MapConvertor` (the default data converter) expects this structure. If your 
   'data': {...}                        // Optional: custom business data for the edge
 }
 ```
+
+### Example Data Structure
+
+
+```dart
+final graphData = {
+  'vertexes': [
+    {'id': '1', 'tag': 'user', 'data': null},
+    {'id': '2', 'tag': 'user', 'data': null},
+    {'id': '3', 'tag': 'admin', 'data': null},
+  ],
+  'edges': [
+    {'ranking': 1, 'edgeName': 'follows', 'srcId': '1', 'dstId': '2'},
+    {'ranking': 2, 'edgeName': 'manages', 'srcId': '3', 'dstId': '1'},
+  ]
+};
+```
+
+The `MapConvertor` (the default data converter) expects this structure. If your data is in a different format, you can write a custom `DataConvertor` to transform it.
+
 
 ## 3. Set Up a Data Converter
 
@@ -187,69 +191,8 @@ class GraphPage extends StatelessWidget {
 }
 ```
 
-## 7. Add Interactivity
 
-### Display Data Panels on Hover
-
-Show contextual information when hovering over nodes or edges:
-
-```dart
-options.vertexPanelBuilder = (vertex) {
-  return Container(
-    padding: EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      boxShadow: [BoxShadow(blurRadius: 4)],
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('ID: ${vertex.id}', style: TextStyle(fontWeight: FontWeight.bold)),
-        Text('Tag: ${vertex.tag}'),
-        Text('Degree (Connections): ${vertex.degree}'),
-      ],
-    ),
-  );
-};
-
-options.edgePanelBuilder = (edge) {
-  return Container(
-    padding: EdgeInsets.all(12),
-    color: Colors.white,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('Type: ${edge.edgeName}', style: TextStyle(fontWeight: FontWeight.bold)),
-        Text('From: ${edge.start.id} → ${edge.end?.id ?? "?"}'),
-        Text('Ranking: ${edge.ranking}'),
-      ],
-    ),
-  );
-};
-```
-
-### React to Tap Events
-
-```dart
-options.onVertexTapDown = (vertex, event) {
-  print('Vertex tapped (pressed): ${vertex.id}');
-  vertex.picked = true;  // Visual feedback
-};
-
-options.onVertexTapUp = (vertex, event) {
-  print('Vertex tapped (released): ${vertex.id}');
-  vertex.picked = false;
-};
-
-options.onVertexTapCancel = (vertex, event) {
-  print('Vertex tap cancelled: ${vertex.id}');
-  vertex.picked = false;
-};
-```
-
-## 8. Performance Tips for Large Graphs
+## Performance Tips for Large Graphs
 
 For graphs with thousands of nodes, optimize performance:
 
@@ -275,11 +218,11 @@ options.scale.value = 0.5;  // Render at half resolution
 
 Now that you have a working graph, explore these topics to deepen your understanding:
 
+- **[Options](option.md)** - Understand the main component for construct complex features
 - **[Data Models](models.md)** — Understand Graph, Vertex, and Edge in detail
 - **[Layout Algorithms](algorithms.md)** — Learn about force-directed, circle, and custom layouts
 - **[Styling](styles.md)** — Advanced color, shape, and text customization
 - **[Decorators](decorators.md)** — Add physics, persistence, and custom behaviors
-- **[Graph Options](options.md)** — Full configuration reference
 - **[Data Converters](convertors.md)** — Adapt your data format to the library
 
 ---

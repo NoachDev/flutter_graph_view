@@ -14,7 +14,7 @@ The `Options` class is the central configuration hub for controlling graph behav
 ```dart
 class Options {
   // Component rendering
-  GraphComponentBuilder graphComponentBuilder = GraphComponentCanvas.new;
+  GraphComponentBuilder graphComponentBuilder;
   
   // Hover/interaction panels
   VertexPanelBuilder? vertexPanelBuilder;
@@ -22,8 +22,8 @@ class Options {
   Widget? vertexTapUpPanel;
   
   // Shapes
-  VertexShape vertexShape = VertexCircleShape();
-  EdgeShape edgeShape = EdgeLineShape();
+  VertexShape vertexShape;
+  EdgeShape edgeShape;
   
   // Styling (see Styles.md for color configuration)
   GraphStyle graphStyle = GraphStyle();
@@ -31,7 +31,6 @@ class Options {
   
   // Interaction
   bool enableHit = true;
-  dynamic Function(Vertex vertex, dynamic)? onVertexTapDown;
   dynamic Function(Vertex vertex, dynamic)? onVertexTapUp;
   dynamic Function(Vertex vertex, dynamic)? onVertexTapCancel;
   
@@ -41,7 +40,7 @@ class Options {
   ValueNotifier<Offset> get offset => ...;
   
   // Text configuration
-  bool showText = true;
+  bool showText;
   String Function(Vertex) textGetter = (v) => '${v.id}';
   String? Function(Vertex) imgUrlGetter = (v) => null;
   
@@ -53,6 +52,11 @@ class Options {
   
   // References (auto-injected)
   Graph? graph;
+
+  // main functions (auto-injected - from graph)
+  void refreshData()
+  void mergeGraph()
+  void disjoinGraph()
 }
 ```
 
@@ -74,7 +78,7 @@ options.edgeShape = EdgeLineShape(scaleLoop: 1.5);  // Larger self-loop arcs
 
 ### Enable/Disable Hit Testing
 
-Hit testing (click/hover detection) impacts performance. Disable for large graphs if you don't need interaction:
+Configure hit testing (click/hover detection) impacts performance. Disable for large graphs if you don't need interaction:
 
 ```dart
 // Enable hit detection (default)
@@ -86,15 +90,9 @@ options.enableHit = false;
 
 ### Vertex Tap Callbacks
 
-Handle user interactions on vertices:
+Configure handle user interactions on vertices:
 
 ```dart
-// Called when user presses down on a vertex
-options.onVertexTapDown = (vertex, event) {
-  print('Pressed: ${vertex.id}');
-  vertex.picked = true;  // Visual feedback
-};
-
 // Called when user releases the vertex
 options.onVertexTapUp = (vertex, event) {
   print('Released: ${vertex.id}');
@@ -108,55 +106,52 @@ options.onVertexTapCancel = (vertex, event) {
 };
 ```
 
+## Graph Update
+
+Useful functions for update data of graph
+
+## add new elements ( a graph )
+The graph model auto-inject by option provides one function for add new vertexes and edges simutanly
+
+```dart
+option.graph.mergeGraph({
+  "vertexes" : [...], 
+  "edges" : [...]
+})
+```
+
+## remove elements ( a subgraph )
+The graph model auto-inject by option provides one function for remove vertexes and edges simutanly
+
+```dart
+option.graph.disjoinGraph({
+  "vertexes" : [...], 
+  "edges" : [...]
+})
+```
+
+**hint** : with onVertexTapUp we access graph by "g" ( e.g. vertex.g!.disjoinGraph(...) )
+
 ## Zoom and Pan
 
 ### Scale Range (Zoom Limits)
 
 Control minimum and maximum zoom levels:
 
+- The variable offset control the canvas position
+- The variable scale control the zoom level
+- The varibale scaleRange control the maximum zoom allowed
+
+
 ```dart
 // Default: 5% to 500% zoom
 options.scaleRange = Vector2(0.05, 5.0);
 
-// More restrictive (don't zoom too far out or in)
-options.scaleRange = Vector2(0.5, 2.0);
-
-// Very permissive (allow extreme zoom)
-options.scaleRange = Vector2(0.01, 10.0);
-
 // Zoom values
 options.scale.value = 1.0;  // 100% (normal size)
-options.scale.value = 0.5;  // 50% (zoomed out)
-options.scale.value = 2.0;  // 200% (zoomed in)
 
 // Pan/offset
 options.offset.value = Offset(100, 50);  // Move canvas
-```
-
-## Text Configuration
-
-### Display and Formatting
-
-```dart
-// Show/hide vertex labels
-options.showText = true;    // Default: visible
-options.showText = false;   // Hidden for cleaner look
-
-// Customize label text
-options.textGetter = (vertex) => '${vertex.id}';
-
-// Multi-line labels
-options.textGetter = (vertex) {
-  return '${vertex.id}\n(degree: ${vertex.degree})';
-};
-
-// Custom data from business object
-options.textGetter = (vertex) {
-  if (vertex.data is Map) {
-    return vertex.data['displayName'] ?? '${vertex.id}';
-  }
-  return '${vertex.id}';
-};
 ```
 
 ### Images on Vertices
@@ -175,7 +170,7 @@ options.imgUrlGetter = (vertex) {
 
 ### Vertex Panel (Hover Information)
 
-Show contextual data when user hovers over a vertex:
+A widget called when user hovers over a vertex. Them is, normaly, for show contextual data:
 
 ```dart
 options.vertexPanelBuilder = (vertex) {
@@ -231,7 +226,7 @@ Widget _panelRow(String label, String value) {
 
 ### Edge Panel (Hover Information)
 
-Show information about edges on hover:
+A widget called when user hovers over a edge. Them is, normaly, for show contextual data::
 
 ```dart
 options.edgePanelBuilder = (edge) {
@@ -261,7 +256,7 @@ options.edgePanelBuilder = (edge) {
 
 ### Tap Panel (Click Information)
 
-Show detailed panel when user taps a vertex:
+A widget called when user tap over a vertex. Them is, normaly, for show contextual data:
 
 ```dart
 options.vertexTapUpPanel = Container(
@@ -335,12 +330,13 @@ final options = Options()
   
   // Interaction
   ..enableHit = true
-  ..onVertexTapDown = (vertex, event) {
+  ..onVertexTapUp = (vertex, event) {
     print('Selected: ${vertex.id}');
     vertex.picked = true;
-  }
-  ..onVertexTapUp = (vertex, event) {
-    vertex.picked = false;
+    vertex.g!.mergeGraph({
+      "vertexes" : [...], 
+      "edges" : [...]
+    })
   }
   
   // Zoom
@@ -381,11 +377,6 @@ options.offset.addListener(() {
   print('Pan offset: ${options.offset.value}');
 });
 
-// Observe refresh/timestamp (animation frame trigger)
-// This notifies when the graph should redraw
-options.refreshData(() {
-  // Rebuild the widget
-});
 ```
 
 ## Integration Notes

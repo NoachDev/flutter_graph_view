@@ -38,28 +38,27 @@ class Graph<ID> {
   /// Observable canvas size (synced from options)
   ValueNotifier<Size> get size => options!.size;
   
-  /// Currently hovered vertex (under mouse cursor)
+  /// Currently hovered vertex ( importantly for drag )
   Vertex<ID>? get hoverVertex => _hoverVertex;
-  set hoverVertex(Vertex<ID>? v) { ... }
   
   /// Currently hovered edge
   Edge? hoverEdge;
   
-  /// User-selected vertices (from tap/keyboard interactions)
-  List<Vertex<ID>> pickedVertex = [];
+  /// A static state, usefull for interactions ( not used in core )
+  List<Vertex<ID>> pickedVertex;
   
   /// Original business data that was converted into this graph
   dynamic data;
   
   /// All unique tags found in all vertices
-  List<String> allTags = [];
+  List<String> allTags;
   
   /// All edge type names (edgeNames) found in all edges
-  List<String> allEdgeNames = [];
+  List<String> allEdgeNames;
   
   /// Internal mapping for quick access to edges between two vertices
   /// Key format: "${srcId}→${dstId}", value: list of edges
-  Map<String, List<Edge>> edgesBetweenHash = {};
+  Map<String, List<Edge>> edgesBetweenHash;
 }
 ```
 
@@ -93,37 +92,40 @@ class Vertex<I> {
   late String tag;
   
   /// Whether to use a solid color vs gradient
-  late bool solid;
+  bool solid;
 
   /// Scale factor for vertex radius (default 1.0)
-  late double radiusScale;
+  double radiusScale;
+
+  /// A toggle for increase the size of vertex with the numer of degrees (default true)
+  bool scaleDegree;
 
   /// Additional tags for multi-classification (e.g., ["developer", "senior"])
   List<String>? tags;
   
   /// Outgoing edges (edges where this vertex is the start)
-  Set<Edge> nextEdges = {};
+  Set<Edge> nextEdges;
   
   /// Incoming edges (edges where this vertex is the end)
-  Set<Edge> prevEdges = {};
+  Set<Edge> prevEdges;
   
   /// Successor vertices (connected via outgoing edges)
-  Set<Vertex<I>> nextVertexes = {};
+  Set<Vertex<I>> nextVertexes;
   
   /// Predecessor vertices (connected via incoming edges)
   Set<Vertex<I>> prevVertexes = {};
   
   /// Total degree: count of all connections (in + out)
-  int degree = 0;
+  int degree;
   
   /// Whether this vertex is currently selected by user
-  bool picked = false;
+  bool picked;
   
   /// Parent vertex in hierarchy (for layout algorithms)
   Vertex<I>? prevVertex;
   
   /// Depth in the hierarchy
-  int deep = 1;
+  int deep;
   
   /// Color list assigned to this vertex (by tag or randomly)
   List<Color> colors = [];
@@ -135,26 +137,26 @@ class Vertex<I> {
   late dynamic data;
   
   /// Base radius size (before dynamic calculation)
-  double _radius = 5;
+  double _radius;
   
   /// Computed radius: dynamically scales based on degree (connectivity)
   /// Formula: log(degree * 10 + 1) + base radius
-  double get radius => (log(degree * 10 + 1)) + _radius;
+  double get radius => ...;
   
   /// Optional custom size override (if specified, overrides computed radius)
   Size? size;
   
   /// Whether this vertex should be rendered
-  bool visible = true;
+  bool visible;
   
   /// Whether this vertex is anchored to the center (for certain layouts)
-  bool isCenter = false;
+  bool isCenter;
   
   /// Zoom/scale factor for this specific vertex
-  double zoom = 1.0;
+  double zoom;
   
   /// Custom properties map for storing decorator/algorithm-specific data
-  Map<String, dynamic> properties = {};
+  Map<String, dynamic> properties;
 }
 ```
 

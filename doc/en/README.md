@@ -5,14 +5,13 @@
 
 # Flutter Graph View - Documentation
 
-Welcome to the documentation of **Flutter Graph View**, a powerful Dart/Flutter library for creating interactive and animated graph visualizations.
+Welcome to the documentation of **Flutter Graph View**
 
 Flutter Graph View makes it easy to visualize complex network relationships, organizational hierarchies, dependency graphs, knowledge bases, and other graph-based data structures with a smooth, responsive user experience.
 
 ## 📚 Main Topics
 
 ### Getting Started
-- [Overview](overview.md) — Learn what Flutter Graph View is, its core concepts, and main features
 - [Quick Start](quick_start.md) — Set up and create your first interactive graph in minutes
 
 ### Core Architecture

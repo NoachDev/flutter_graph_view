@@ -23,6 +23,9 @@ abstract class DataConvertor<V, E> {
   
   /// Transform complete business data structure into a Graph
   Graph convertGraph(dynamic data, {Graph? graph});
+
+  /// Transform data structure into a subgraph and remove them from origin
+  Graph revertGraph(dynamic data, {Graph? graph});
   
   /// Register a converted vertex into the graph (caching, tag tracking)
   void vertexAsGraphComponse(V v, Graph<dynamic> g, Vertex<dynamic> vertex);
@@ -33,50 +36,23 @@ abstract class DataConvertor<V, E> {
   /// Index edges between two specific vertices (for multigraph support)
   void fillEdgesBetween(Graph g, Edge result);
   
-  /// Add an edge with deduplication (prevents duplicate edges)
+  /// Add an edge
   Edge addEdge(E e, Graph graph);
   
-  /// Add a vertex with deduplication (prevents duplicate vertices)
+  /// Add a vertex
   Vertex addVertex(V v, Graph graph);
+
+  /// Remove an edge
+  Edge removeEdge(E e, Graph graph);
+  
+  /// Remove a vertex
+  Vertex removeVertex(V v, Graph graph);
 }
-```
-
-## MapConvertor (Built-in Default)
-
-For JSON/Map-formatted data, use the provided `MapConvertor`:
-
-### Expected Data Format
-
-```dart
-final data = {
-  'vertexes': [
-    {
-      'id': 'unique_identifier',    // Required
-      'tag': 'primary_type',         // Required
-      'tags': ['tag1', 'tag2'],     // Optional: additional tags
-      'data': {...}                 // Optional: custom business data
-    },
-    // ... more vertices
-  ],
-  'edges': [
-    {
-      'ranking': 1,                  // Required: priority/order
-      'edgeName': 'relationship_type', // Required: edge type name
-      'srcId': 'source_vertex_id',   // Required: ID of source vertex
-      'dstId': 'target_vertex_id',   // Required: ID of target vertex
-      'data': {...}                  // Optional: custom business data
-    },
-    // ... more edges
-  ]
-};
-
-final convertor = MapConvertor();
-final graph = convertor.convertGraph(data);
 ```
 
 ## Creating Custom Converters
 
-For non-standard data formats, extend `DataConvertor`:
+For non-standard data formats e.g. er_graph ( of exemples ), extend `DataConvertor`:
 
 ### Example: Converting Custom Business Classes
 
