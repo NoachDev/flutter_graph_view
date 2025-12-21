@@ -23,10 +23,17 @@ abstract class DataConvertor<V, E> {
   /// 将业务数据转换成 【边 | 关系】 数据
   Edge convertEdge(E e, Graph graph);
 
-  /// Convert data struc from business to Graph.
+  /// Convert data struc from business to construct a Graph.
   ///
   /// 将业务数据转换成 图数据，同时提取点跟线便于使用的数据格式。
   Graph convertGraph(dynamic data, {Graph? graph});
+
+  // Convert data struc from business to exclude a Graph.
+  Graph revertGraph(dynamic data, {Graph? graph}){
+
+    throw UnimplementedError("your data-convertor is dosn't configured to remove graph data.");
+
+  }
 
   /// Create vertex and graph relationship in memory.
   ///
@@ -40,6 +47,16 @@ abstract class DataConvertor<V, E> {
       var absent = !g.allTags.contains(tag);
       if (absent) g.allTags.add(tag);
     });
+  }
+
+  /// Remove vertex and graph relationship from memory.
+  @mustCallSuper
+  void inverseVertexAsGraphComponse(
+      V v, Graph<dynamic> g, Vertex<dynamic> vertex) {
+    vertex.data = v;
+    g.keyCache.remove(vertex.id);
+
+    // todo : need remove tag from allTags.
   }
 
   /// Create edge and graph relationship in memory.
@@ -63,6 +80,25 @@ abstract class DataConvertor<V, E> {
     fillEdgesBetween(g, result);
   }
 
+  // Remove relationship of edge and graph from memory.
+  @mustCallSuper
+  void inverseEdgeAsGraphComponse(Graph<dynamic> g, Edge result) {
+    if (result.end != null) {
+      result.start.nextVertexes.remove(result.end!);
+      result.start.nextEdges.remove(result);
+      result.end!.degree--;
+      result.end!.prevVertexes.remove(result.start);
+      result.end!.prevEdges.remove(result);
+    }
+
+    result.start.degree--;
+
+    var exists = g.allEdgeNames.contains(result.edgeName);
+    if (exists) g.allEdgeNames.remove(result.edgeName);
+
+    removeFillEdgesBetween(g, result);
+  }
+
   /// cache for edge list between two vertex.
   ///
   /// 对两个节点间的边集合进行缓存，以计算边的位置偏移量
@@ -76,14 +112,25 @@ abstract class DataConvertor<V, E> {
     if (!list.contains(result)) list.add(result);
   }
 
+  void removeFillEdgesBetween(Graph g, Edge result) {
+    var end = result.end;
+
+    if (end != null) {
+      final start = result.start;
+
+      final key = Graph.edgesBetweenKey(start, end);
+      g.edgesBetweenHash.remove(key);
+    }
+  }
+
   /// Add data and component when absent.
   ///
   /// 提供边的去重方法，当不存在时添加
   Edge addEdge(E e, Graph graph) {
-    var sameEdge = graph.edges.where((edgeIn) => edgeIn == e).toList();
-    Edge edge;
+    Edge edge = convertEdge(e, graph);
+    var sameEdge = graph.edges.where((edgeIn) => edgeIn == edge).toList();
+
     if (sameEdge.isEmpty) {
-      edge = convertEdge(e, graph);
       edgeAsGraphComponse(e, graph, edge);
       graph.edges.add(edge);
       edge.g = graph;
@@ -93,13 +140,28 @@ abstract class DataConvertor<V, E> {
     return edge;
   }
 
+  void _removeEdge(edge, Graph graph) {
+    final dumpedEdge = graph.edges.where((edgeIn) => edgeIn == edge);
+
+    if (dumpedEdge.isNotEmpty) {
+      inverseEdgeAsGraphComponse(graph, edge);
+      graph.edges.remove(edge);
+      edge.g = graph;
+    }
+  }
+
+  void removeEdge(E e, Graph graph) {
+    Edge edge = convertEdge(e, graph);
+    _removeEdge(edge, graph);
+  }
+
   /// Add data and component when absent.
   ///
   /// 提供边的去重方法，当不存在时添加
   Vertex addVertex(V v, Graph graph) {
     Vertex vertex = convertVertex(v, graph);
     var sameVertex =
-        graph.vertexes.where((edgeIn) => edgeIn == vertex).toList();
+        graph.vertexes.where((vertexIn) => vertexIn == vertex).toList();
     if (sameVertex.isEmpty) {
       vertexAsGraphComponse(v, graph, vertex);
       graph.vertexes.add(vertex);
@@ -112,5 +174,22 @@ abstract class DataConvertor<V, E> {
       vertex = sameVertex.first;
     }
     return vertex;
+  }
+
+  // Remove data and component when exists.
+  void removeVertex(V v, Graph graph) {
+    Vertex vertex = convertVertex(v, graph);
+    final dumpedVertex = graph.vertexes.where((edgeIn) => edgeIn == vertex);
+
+    if (dumpedVertex.isNotEmpty) {
+      inverseVertexAsGraphComponse(v, graph, vertex);
+
+      for (var i in dumpedVertex.first.neighborEdges) {
+        _removeEdge(i, graph);
+      }
+
+      graph.vertexes.remove(vertex);
+      vertex.g = graph;
+    }
   }
 }

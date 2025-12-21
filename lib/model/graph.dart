@@ -126,4 +126,5 @@ class Graph<ID> {
   ValueNotifier get scale => options!.scale;
   get refreshData => options?.refreshData;
   get mergeGraph => options?.mergeGraph;
+  get disjoinGraph => options?.disjoinGraph;
 }

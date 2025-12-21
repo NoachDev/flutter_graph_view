@@ -440,6 +440,13 @@ class Options {
     graph.convertor?.convertGraph(graphData, graph: graph);
   }
 
+  void disjoinGraph(graphData, {bool manual = true}) {
+    if (manual) {
+      // graph.algorithm?.beforeMerge(graphData);
+    }
+    graph.convertor?.revertGraph(graphData, graph: graph);
+  }
+
   /// @en: Refresh graph data.
   ///
   /// @zh: 刷新图数据

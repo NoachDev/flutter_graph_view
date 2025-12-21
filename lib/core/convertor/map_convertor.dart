@@ -76,6 +76,26 @@ class MapConvertor extends DataConvertor<Map, Map> {
     return result;
   }
 
+  @override
+  Graph revertGraph(data, {Graph? graph}) {
+    var result = graph ?? Graph();
+    result.data = data;
+
+    if (data is Map) {
+      var edgeDataList = originEdges(data);
+      var vertexDataList = originVertexes(data);
+
+      for (var v in vertexDataList) {
+        removeVertex(v, result);
+      }
+      for (var e in edgeDataList) {
+        removeEdge(e, result);
+      }
+    }
+    
+    return result;
+  }
+
   Iterable originVertexes(dynamic data) => data['vertexes'];
 
   Iterable originEdges(dynamic data) => data['edges'];
