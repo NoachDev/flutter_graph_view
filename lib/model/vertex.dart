@@ -21,8 +21,10 @@ class Vertex<I> {
   late String tag;
 
   bool solid = true; // the color
+
   double radiusScale = 1.0;
 
+  bool scaleDegree = true;
 
   /// All the tags of vertex.
   /// 节点所有标签
@@ -89,12 +91,14 @@ class Vertex<I> {
   late dynamic data;
 
   double _radius = 5;
-  
+
   set radius(double radius) => _radius = radius;
 
   /// The radius of this vertex, that which assigment by StyleConfiguration.
   /// 节点的默认半径，用于被样式选项设置器进行修改以更新图形
-  double get radius => (math.log(degree * 10 + 1)) + _radius * radiusScale;
+  double get radius => scaleDegree
+      ? (math.log(degree * 10 + 1)) + _radius * radiusScale
+      : _radius * radiusScale;
 
   /// The size of this vertex
   ///
